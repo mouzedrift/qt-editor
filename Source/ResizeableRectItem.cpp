@@ -27,7 +27,6 @@ ResizeableRectItem::ResizeableRectItem(QGraphicsView* pView, MapObject* pMapObje
     SetTransparency(this, transparency);
 }
 
-// TODO: Re-calc on new w/h
 qreal ResizeableRectItem::CalcZPos() const
 {
     // Why isn't area == 1 ?
@@ -91,10 +90,14 @@ void ResizeableRectItem::mouseReleaseEvent( QGraphicsSceneMouseEvent* aEvent )
 void ResizeableRectItem::paint( QPainter* aPainter, const QStyleOptionGraphicsItem* aOption, QWidget* aWidget)
 {
     QRectF cRect(0, 0, mWidth, mHeight);
-
+    
     if ( isSelected() )
     {
         aPainter->setPen( QPen ( Qt::red, 2, Qt::DashLine ) );
+    }
+    else if (mHoveringItem)
+    {
+        aPainter->setPen(QPen(Qt::yellow, 2, Qt::SolidLine));
     }
     else
     {
@@ -193,9 +196,16 @@ void ResizeableRectItem::hoverMoveEvent( QGraphicsSceneHoverEvent* aEvent )
     }
 }
 
+void ResizeableRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent* aEvent)
+{
+    mHoveringItem = true;
+    QGraphicsItem::hoverEnterEvent(aEvent);
+}
+
 void ResizeableRectItem::hoverLeaveEvent( QGraphicsSceneHoverEvent* aEvent )
 {
     SetViewCursor( Qt::ArrowCursor );
+    mHoveringItem = false;
     QGraphicsItem::hoverLeaveEvent( aEvent );
 }
 
@@ -372,6 +382,7 @@ void ResizeableRectItem::SetRect(const QRectF& rect)
     setHeight(rect.height());
     PosOrRectChanged();
     UpdateIcon();
+    setZValue(3.0 + CalcZPos());
 }
 
 void ResizeableRectItem::SyncFromMapObject()
