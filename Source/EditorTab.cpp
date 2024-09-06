@@ -290,6 +290,47 @@ public:
             }
         );
         menu.addAction(pConnectCollisionsAction);
+
+        const QPoint scenePos = mapToScene(pEvent->pos()).toPoint();
+        QList<QGraphicsItem*> hoveredItems = mEditorTab->GetScene().items(scenePos);
+        auto pHoveredObjectsMenu = menu.addMenu("Hovered objects");
+        for (int i = 0; i < hoveredItems.count(); i++)
+        {
+            QGraphicsItem* pItem = hoveredItems.at(i);
+            ResizeableRectItem* pRectItem = qgraphicsitem_cast<ResizeableRectItem*>(pItem);
+            ResizeableArrowItem* pArrowItem = qgraphicsitem_cast<ResizeableArrowItem*>(pItem);
+
+            QAction* pObjectAction = nullptr;
+            if (pRectItem)
+            {
+                std::string actionName = std::to_string(i) + ": " + pRectItem->GetMapObject()->mObjectStructureType;
+                pObjectAction = pHoveredObjectsMenu->addAction(actionName.c_str());
+            }
+            else if (pArrowItem)
+            {
+                std::string actionName = std::to_string(i) + ": " + "Collision";
+                pObjectAction = pHoveredObjectsMenu->addAction(actionName.c_str());
+            }
+
+            if (pObjectAction && (pRectItem || pArrowItem))
+            {
+                connect(pObjectAction, &QAction::triggered, this, [this, pItem]()
+                {
+                    auto oldItems = mEditorTab->GetScene().selectedItems();
+
+                    mEditorTab->GetScene().clearSelection();
+                    pItem->setSelected(true);
+
+                    auto newItems = mEditorTab->GetScene().selectedItems();
+                    emit mEditorTab->GetScene().SelectionChanged(oldItems, newItems);
+
+                    mEditorTab->PopulatePropertyEditor(pItem);
+                });
+            }
+        }
+
+        pHoveredObjectsMenu->setEnabled(!pHoveredObjectsMenu->actions().isEmpty());
+
         menu.exec(pEvent->globalPos());
     }
 
