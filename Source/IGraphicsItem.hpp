@@ -7,6 +7,7 @@ class IGraphicsItem
 {
 public:
     virtual ~IGraphicsItem() { }
+    virtual void SetHighlighted(bool enabled) = 0;
     virtual void SyncInternalObject() = 0;
     virtual std::vector<UP_ObjectProperty>& GetProperties() = 0;
 

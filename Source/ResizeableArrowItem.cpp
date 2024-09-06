@@ -16,8 +16,15 @@ ResizeableArrowItem::ResizeableArrowItem(QGraphicsView* pView, CollisionObject* 
     SetTransparency(this, transparency);
 }
 
+void ResizeableArrowItem::hoverEnterEvent(QGraphicsSceneHoverEvent* aEvent)
+{
+    mHighlightItem = true;
+    QGraphicsItem::hoverEnterEvent(aEvent);
+}
+
 void ResizeableArrowItem::hoverLeaveEvent( QGraphicsSceneHoverEvent* aEvent )
 {
+    mHighlightItem = false;
     SetViewCursor( Qt::ArrowCursor );
     QGraphicsItem::hoverLeaveEvent( aEvent );
 }
@@ -154,6 +161,10 @@ void ResizeableArrowItem::paint( QPainter* aPainter, const QStyleOptionGraphicsI
     if ( isSelected() )
     {
         aPainter->setPen( QPen ( Qt::red, 2, Qt::DashLine )  );
+    }
+    else if (mHighlightItem)
+    {
+        aPainter->setPen(QPen(Qt::yellow, 2, Qt::SolidLine));
     }
     else
     {

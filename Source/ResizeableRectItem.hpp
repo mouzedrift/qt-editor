@@ -24,6 +24,12 @@ public:
         SyncFromMapObject();
     }
 
+    virtual void SetHighlighted(bool enabled) override
+    {
+        mHighlightItem = enabled;
+        update();
+    }
+
     std::vector<UP_ObjectProperty>& GetProperties() override
     {
         return mMapObject->mProperties;
@@ -94,5 +100,5 @@ private:
 
     SnapSettings& mSnapSettings;
     IPointSnapper& mPointSnapper;
-    bool mHoveringItem = false;
+    bool mHighlightItem = false;
 };

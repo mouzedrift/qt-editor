@@ -19,6 +19,12 @@ public:
     void RestoreLine(const QLineF& line);
     CollisionObject* GetCollisionItem() const { return mLine; }
 
+    virtual void SetHighlighted(bool enabled) override
+    {
+        mHighlightItem = enabled;
+        update();
+    }
+
     void SyncInternalObject() override
     {
         SyncToCollisionItem();
@@ -30,6 +36,7 @@ public:
     }
 
 protected:
+    void hoverEnterEvent(QGraphicsSceneHoverEvent* aEvent) override;
     void hoverLeaveEvent( QGraphicsSceneHoverEvent* aEvent ) override;
     void hoverMoveEvent( QGraphicsSceneHoverEvent* aEvent ) override;
     void mousePressEvent( QGraphicsSceneMouseEvent* aEvent ) override;
@@ -63,4 +70,5 @@ private:
 
     SnapSettings& mSnapSettings;
     IPointSnapper& mSnapper;
+    bool mHighlightItem = false;
 };

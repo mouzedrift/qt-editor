@@ -95,7 +95,7 @@ void ResizeableRectItem::paint( QPainter* aPainter, const QStyleOptionGraphicsIt
     {
         aPainter->setPen( QPen ( Qt::red, 2, Qt::DashLine ) );
     }
-    else if (mHoveringItem)
+    else if (mHighlightItem)
     {
         aPainter->setPen(QPen(Qt::yellow, 2, Qt::SolidLine));
     }
@@ -198,14 +198,14 @@ void ResizeableRectItem::hoverMoveEvent( QGraphicsSceneHoverEvent* aEvent )
 
 void ResizeableRectItem::hoverEnterEvent(QGraphicsSceneHoverEvent* aEvent)
 {
-    mHoveringItem = true;
+    mHighlightItem = true;
     QGraphicsItem::hoverEnterEvent(aEvent);
 }
 
 void ResizeableRectItem::hoverLeaveEvent( QGraphicsSceneHoverEvent* aEvent )
 {
     SetViewCursor( Qt::ArrowCursor );
-    mHoveringItem = false;
+    mHighlightItem = false;
     QGraphicsItem::hoverLeaveEvent( aEvent );
 }
 
