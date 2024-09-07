@@ -452,7 +452,7 @@ public:
     void AddEditCameraAction(QMenu* pMenu, QContextMenuEvent* pEvent)
     {
         auto pEditCameraAction = new QAction("Edit camera", pMenu);
-        connect(pEditCameraAction, &QAction::triggered, this, [&]()
+        connect(pEditCameraAction, &QAction::triggered, this, [&, pEvent]()
             {
                 const QPoint scenePos = mapToScene(pEvent->pos()).toPoint();
                 CameraManager cameraManager(this, mEditorTab, &scenePos);
