@@ -188,8 +188,11 @@ void AddObjectDialog::on_buttonBox_accepted()
 {
     if (!ui->lstObjects->selectedItems().isEmpty())
     {
-        auto pItem = static_cast<ObjectListItem*>(ui->lstObjects->selectedItems().at(0));
-        const UP_ObjectStructure& objStructure = pItem->GetObjectStructure();
-        mTab->AddCommand(new AddNewObjectCommand(mTab, objStructure));
+        for (auto pItem : ui->lstObjects->selectedItems())
+        {
+            auto pListItem = static_cast<ObjectListItem*>(pItem);
+            const UP_ObjectStructure& objStructure = pListItem->GetObjectStructure();
+            mTab->AddCommand(new AddNewObjectCommand(mTab, objStructure));
+        }
     }
 }
