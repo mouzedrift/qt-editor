@@ -273,25 +273,10 @@ public:
     void contextMenuEvent(QContextMenuEvent* pEvent) override
     {
         QMenu menu(this);
-        auto pEditCameraAction = new QAction("Edit camera", &menu);
-        connect(pEditCameraAction, &QAction::triggered, this, [&]()
-            {
-                const QPoint scenePos = mapToScene(pEvent->pos()).toPoint();
-                CameraManager cameraManager(this, mEditorTab, &scenePos);
-                mEditorTab->SetCameraManagerDialog(&cameraManager);
-                cameraManager.exec();
-                mEditorTab->SetCameraManagerDialog(nullptr);
-            });
-        menu.addAction(pEditCameraAction);
-        auto pConnectCollisionsAction = new QAction("Connect collisions", &menu);
-        connect(pConnectCollisionsAction, &QAction::triggered, this, [&]()
-            {
-                mEditorTab->ConnectCollisions();
-            }
-        );
-        menu.addAction(pConnectCollisionsAction);
-
-        AddObjectHoverMenu(&menu, pEvent);
+        AddEditCameraAction(&menu, pEvent);
+        AddCollisionConnectAction(&menu, pEvent);
+        AddHoveredObjectsMenu(&menu, pEvent);
+        AddSelectMenu(&menu, pEvent);
 
         menu.exec(pEvent->globalPos());
     }
@@ -331,7 +316,154 @@ public:
         pEvent->acceptProposedAction();
     }
 
-    void AddObjectHoverMenu(QMenu* pMenu, QContextMenuEvent* pEvent)
+    void AddSelectMenu(QMenu* pMenu, QContextMenuEvent* pEvent)
+    {
+        auto pSelectMenu = pMenu->addMenu("Select");
+
+        auto pAllAction = pSelectMenu->addAction("All");
+        auto pAllObjectsAction = pSelectMenu->addAction("All objects");
+
+        auto pAllCollisionsAction = pSelectMenu->addAction("All collisions");
+
+        auto pNoneAction = pSelectMenu->addAction("None");
+        auto pInvertAction = pSelectMenu->addAction("Invert");
+
+        const bool hasAnySelectedItems = !mEditorTab->GetScene().selectedItems().isEmpty();
+
+        QList<ResizeableRectItem*> rectItems;
+        QList<ResizeableArrowItem*> arrowItems;
+        for (const auto& item : mEditorTab->GetScene().items())
+        {
+            auto pItem = qgraphicsitem_cast<ResizeableRectItem*>(item);
+            auto pArrow = qgraphicsitem_cast<ResizeableArrowItem*>(item);
+
+            if (pItem)
+            {
+                rectItems.append(pItem);
+            }
+            else if (pArrow)
+            {
+                arrowItems.append(pArrow);
+            }
+        }
+
+        pAllAction->setEnabled(!rectItems.isEmpty() || !arrowItems.isEmpty());
+        pAllObjectsAction->setEnabled(!rectItems.isEmpty());
+        pAllCollisionsAction->setEnabled(!arrowItems.isEmpty());
+        pNoneAction->setEnabled(hasAnySelectedItems);
+        pInvertAction->setEnabled(hasAnySelectedItems);
+
+        connect(pAllAction, &QAction::triggered, this, [&]()
+        {
+            auto oldItems = mEditorTab->GetScene().selectedItems();
+            for (const auto& item : mEditorTab->GetScene().items())
+            {
+                item->setSelected(true);
+            }
+
+            auto newItems = mEditorTab->GetScene().selectedItems();
+            if (oldItems != newItems)
+            {
+                emit mEditorTab->GetScene().SelectionChanged(oldItems, newItems);
+                if (newItems.count() == 1)
+                {
+                    mEditorTab->PopulatePropertyEditor(newItems.first());
+                }
+            }
+        });
+
+        connect(pAllObjectsAction, &QAction::triggered, this, [&, rectItems]()
+        {
+            auto oldItems = mEditorTab->GetScene().selectedItems();
+            for (const auto& item : rectItems)
+            {
+                item->setSelected(true);
+            }
+
+            auto newItems = mEditorTab->GetScene().selectedItems();
+            if (oldItems != newItems)
+            {
+                emit mEditorTab->GetScene().SelectionChanged(oldItems, newItems);
+                if (newItems.count() == 1)
+                {
+                    mEditorTab->PopulatePropertyEditor(newItems.first());
+                }
+            }
+        });
+
+        connect(pAllCollisionsAction, &QAction::triggered, this, [&, arrowItems]()
+        {
+            auto oldItems = mEditorTab->GetScene().selectedItems();
+            for (const auto& item : arrowItems)
+            {
+                item->setSelected(true);
+            }
+
+            auto newItems = mEditorTab->GetScene().selectedItems();
+            if (oldItems != newItems)
+            {
+                emit mEditorTab->GetScene().SelectionChanged(oldItems, newItems);
+                if (newItems.count() == 1)
+                {
+                    mEditorTab->PopulatePropertyEditor(newItems.first());
+                }
+            }
+        });
+
+        connect(pNoneAction, &QAction::triggered, this, [&]()
+        {
+            auto oldItems = mEditorTab->GetScene().selectedItems();
+            mEditorTab->GetScene().clearSelection();
+            auto newItems = mEditorTab->GetScene().selectedItems();
+
+            if (oldItems != newItems)
+            {
+                emit mEditorTab->GetScene().SelectionChanged(oldItems, newItems);
+            }
+        });
+
+        connect(pInvertAction, &QAction::triggered, this, [&]()
+        {
+            auto oldItems = mEditorTab->GetScene().selectedItems();
+            for (const auto& item : mEditorTab->GetScene().items())
+            {
+                item->setSelected(!item->isSelected());
+            }
+
+            auto newItems = mEditorTab->GetScene().selectedItems();
+            if (oldItems != newItems)
+            {
+                emit mEditorTab->GetScene().SelectionChanged(oldItems, newItems);
+            }
+        });
+    }
+
+    void AddCollisionConnectAction(QMenu* pMenu, QContextMenuEvent* pEvent)
+    {
+        auto pConnectCollisionsAction = new QAction("Connect collisions", pMenu);
+        connect(pConnectCollisionsAction, &QAction::triggered, this, [&]()
+            {
+                mEditorTab->ConnectCollisions();
+            }
+        );
+        pMenu->addAction(pConnectCollisionsAction);
+    }
+
+    void AddEditCameraAction(QMenu* pMenu, QContextMenuEvent* pEvent)
+    {
+        auto pEditCameraAction = new QAction("Edit camera", pMenu);
+        connect(pEditCameraAction, &QAction::triggered, this, [&]()
+            {
+                const QPoint scenePos = mapToScene(pEvent->pos()).toPoint();
+                CameraManager cameraManager(this, mEditorTab, &scenePos);
+                mEditorTab->SetCameraManagerDialog(&cameraManager);
+                cameraManager.exec();
+                mEditorTab->SetCameraManagerDialog(nullptr);
+            });
+        pMenu->addAction(pEditCameraAction);
+    }
+
+    void AddHoveredObjectsMenu(QMenu* pMenu, QContextMenuEvent* pEvent)
     {
         const QPoint scenePos = mapToScene(pEvent->pos()).toPoint();
         QList<QGraphicsItem*> hoveredItems = mEditorTab->GetScene().items(scenePos);
