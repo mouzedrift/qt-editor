@@ -468,6 +468,18 @@ public:
         const QPoint scenePos = mapToScene(pEvent->pos()).toPoint();
         QList<QGraphicsItem*> hoveredItems = mEditorTab->GetScene().items(scenePos);
         auto pHoveredObjectsMenu = pMenu->addMenu("Hovered objects");
+
+        qreal highestZValue = 0;
+        for (int i = 0; i < hoveredItems.count(); i++)
+        {
+            QGraphicsItem* pItem = hoveredItems.at(i);
+
+            if (pItem->zValue() > highestZValue)
+            {
+                highestZValue = pItem->zValue();
+            }
+        }
+
         for (int i = 0; i < hoveredItems.count(); i++)
         {
             QGraphicsItem* pItem = hoveredItems.at(i);
@@ -488,13 +500,13 @@ public:
 
             if (pObjectAction && (pRectItem || pArrowItem))
             {
-                connect(pObjectAction, &QAction::triggered, this, [this, pItem]()
+                connect(pObjectAction, &QAction::triggered, this, [this, pItem, highestZValue]()
                 {
                     auto oldItems = mEditorTab->GetScene().selectedItems();
 
                     mEditorTab->GetScene().clearSelection();
                     pItem->setSelected(true);
-
+                    pItem->setZValue(highestZValue + 1);
                     auto newItems = mEditorTab->GetScene().selectedItems();
                     emit mEditorTab->GetScene().SelectionChanged(oldItems, newItems);
 
