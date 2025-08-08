@@ -45,7 +45,7 @@
 
 // Zoom by 10% each time.
 const float KZoomFactor = 0.10f;
-const float KMaxZoomOutLevels = 6.0f;
+const float KMaxZoomOutLevels = 7.2f;
 const float KMaxZoomInLevels = 14.0f;
 
 INITIALIZE_EASYLOGGINGPP
