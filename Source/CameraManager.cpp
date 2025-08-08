@@ -11,6 +11,8 @@
 #include "SelectionSaver.hpp"
 #include "ResizeableRectItem.hpp"
 
+static constexpr int kMaxCamIds = 256;
+
 static QPixmap Base64ToPixmap(const std::string& s)
 {
     QPixmap tmp;
@@ -403,6 +405,8 @@ CameraManager::CameraManager(QWidget *parent, EditorTab* pParentTab, const QPoin
             }
         }
     }
+
+    ui->spnCameraId->setMaximum(kMaxCamIds);
 }
 
 CameraManager::~CameraManager()
@@ -472,7 +476,8 @@ void CameraManager::CreateCamera(bool dropEvent, QPixmap img)
         const int camId = NextFreeCamId();
         if (camId == -1)
         {
-            QMessageBox::critical(this, "Error", "No more free camera Ids (only 0-99 is valid)");
+            auto message = QString("No more free camera Ids (only 0-%1 is valid)").arg(kMaxCamIds);
+            QMessageBox::critical(this, "Error", message);
             return;
         }
 
@@ -686,7 +691,7 @@ private:
 
 int CameraManager::NextFreeCamId()
 {
-    for (int i = 0; i < 99; i++)
+    for (int i = 0; i < kMaxCamIds; i++)
     {
         bool used = false;
         for (int j = 0; j < ui->lstCameras->count(); j++)
