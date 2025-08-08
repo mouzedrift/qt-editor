@@ -11,7 +11,7 @@
 #include "SelectionSaver.hpp"
 #include "ResizeableRectItem.hpp"
 
-static constexpr int kMaxCamIds = 256;
+static constexpr int kMaxCamIds = 99;
 
 static QPixmap Base64ToPixmap(const std::string& s)
 {
